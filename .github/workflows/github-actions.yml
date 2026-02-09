@@ -1,0 +1,50 @@
+name: Assignment CI
+
+on:
+  push:
+    branches:
+      - '*'
+
+jobs:
+  unit-test:
+    runs-on: self-hosted
+    container:
+      image: cuaesd/aesd-autotest:24-unit-test
+      options: -v /etc/ssl/certs:/etc/ssl/certs:ro
+
+    steps:
+      - name: Install SSH client
+        run: |
+          apt-get update
+          apt-get install -y openssh-client
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          # This action handles the SSH agent and keys for you automatically
+          ssh-key: ${{ secrets.SSH_PRIVATE_K }}
+
+      - name: Run unit test
+        run: ./unit-test.sh
+
+  full-test:
+    runs-on: self-hosted
+    container:
+      image: cuaesd/aesd-autotest:24-assignment1
+      options: -v /etc/ssl/certs:/etc/ssl/certs:ro
+
+    steps:
+      - name: Install SSH client
+        run: |
+          apt-get update
+          apt-get install -y openssh-client
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          ssh-key: ${{ secrets.SSH_PRIVATE_K }}
+
+      - name: Run full test
+        run: ./full-test.sh
